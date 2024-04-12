@@ -6,18 +6,15 @@ from datetime import datetime
 def check_domain(domain):
     try:
         domain_info = whois.whois(domain)
-        # Se a data de expiração é None, o domínio pode estar disponível
-        # ou um erro ocorreu. Verificamos também se a data de expiração é passada.
-        if domain_info.expiration_date is None:
+        # Verifique claramente se a resposta indica que o domínio está registrado
+        if domain_info.status is None:
+            return False  # Suponha não disponível se o status for incerto
+        if "no match" in domain_info.status or "available" in domain_info.status:
             return True
-        if isinstance(domain_info.expiration_date, list):
-            # Se for uma lista, pegamos a primeira data
-            return datetime.now() > domain_info.expiration_date[0]
-        else:
-            return datetime.now() > domain_info.expiration_date
+        return False
     except Exception as e:
-        # Erro ao buscar o domínio, pode ser considerado como disponível para registro
-        return True
+        print(f"Erro ao verificar o domínio {domain}: {e}")
+        return False  # Trate como não disponível em caso de erro
 
 def check_domains(df):
     available_domains = []
