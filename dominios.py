@@ -9,12 +9,17 @@ def check_domain(domain):
         # Imprimir a resposta inteira para depuração
         st.write(f"WHOIS para {domain}: {domain_info}")
 
-        # Verifica se a resposta WHOIS indica que o domínio não está registrado
+        # Converter a resposta inteira em uma string e para minúsculas para facilitar a busca
         response_text = str(domain_info).lower()
-        if "no match" in response_text or "not found" in response_text or "no data found" in response_text:
+
+        # Verifica se há mensagens específicas que indicam que o domínio está disponível
+        if "no match for" in response_text or "not found" in response_text or "no data found" in response_text:
             return True  # Domínio disponível se essas strings forem encontradas
+
+        # Verificar também campos comuns de status e data de expiração
         if domain_info.status is None and domain_info.expiration_date is None:
             return True  # Domínio possivelmente disponível se não houver status ou data de expiração
+
         return False
     except Exception as e:
         st.error(f"Erro ao verificar o domínio {domain}: {e}")
