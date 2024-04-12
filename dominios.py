@@ -6,11 +6,20 @@ from datetime import datetime
 def check_domain(domain):
     try:
         domain_info = whois.whois(domain)
-        # Verifique claramente se a resposta indica que o domínio está registrado
-        if domain_info.status is None:
-            return False  # Suponha não disponível se o status for incerto
-        if "no match" in domain_info.status or "available" in domain_info.status:
-            return True
+        # Vamos imprimir a resposta para entender o que está sendo recebido
+        print(f"WHOIS para {domain}: {domain_info}")
+
+        # Verificamos se há algum indicativo claro de que o domínio está disponível
+        # Isto depende do servidor WHOIS específico e de como ele retorna suas respostas
+        if domain_info.status is None and domain_info.expiration_date is None:
+            return True  # Supomos que o domínio está disponível se não há status ou data de expiração
+        if isinstance(domain_info.status, list):
+            # Algumas respostas retornam uma lista de status, verificamos se algum indica disponibilidade
+            if any("available" in s.lower() for s in domain_info.status):
+                return True
+        elif domain_info.status:
+            if "no match" in domain_info.status.lower() or "available" in domain_info.status.lower():
+                return True
         return False
     except Exception as e:
         print(f"Erro ao verificar o domínio {domain}: {e}")
