@@ -6,24 +6,20 @@ from datetime import datetime
 def check_domain(domain):
     try:
         domain_info = whois.whois(domain)
-        # Usamos st.write para depuração visível na interface do usuário
+        # Imprimir a resposta inteira para depuração
         st.write(f"WHOIS para {domain}: {domain_info}")
 
         # Verifica se a resposta WHOIS indica que o domínio não está registrado
+        response_text = str(domain_info).lower()
+        if "no match" in response_text or "not found" in response_text or "no data found" in response_text:
+            return True  # Domínio disponível se essas strings forem encontradas
         if domain_info.status is None and domain_info.expiration_date is None:
-            return True
-        if isinstance(domain_info.status, list):
-            if any("no match" in s.lower() or "available" in s.lower() for s in domain_info.status):
-                return True
-        elif domain_info.status:
-            if "no match" in domain_info.status.lower() or "available" in domain_info.status.lower():
-                return True
-        if "no match for" in str(domain_info).lower():
-            return True
+            return True  # Domínio possivelmente disponível se não houver status ou data de expiração
         return False
     except Exception as e:
-        st.write(f"Erro ao verificar o domínio {domain}: {e}")
+        st.error(f"Erro ao verificar o domínio {domain}: {e}")
         return False
+
 
 def check_domains(df):
     available_domains = []
