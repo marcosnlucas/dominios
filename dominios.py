@@ -2,28 +2,26 @@ import streamlit as st
 import pandas as pd
 import whois
 from datetime import datetime
+import time
 
 def check_domain(domain):
-    try:
-        domain_info = whois.whois(domain)
-        # Imprimir a resposta inteira para depuração
-        st.write(f"WHOIS para {domain}: {domain_info}")
-
-        # Converter a resposta inteira em uma string e para minúsculas para facilitar a busca
-        response_text = str(domain_info).lower()
-
-        # Verifica se há mensagens específicas que indicam que o domínio está disponível
-        if "no match for" in response_text or "not found" in response_text or "no data found" in response_text:
-            return True  # Domínio disponível se essas strings forem encontradas
-
-        # Verificar também campos comuns de status e data de expiração
-        if domain_info.status is None and domain_info.expiration_date is None:
-            return True  # Domínio possivelmente disponível se não houver status ou data de expiração
-
-        return False
-    except Exception as e:
-        st.error(f"Erro ao verificar o domínio {domain}: {e}")
-        return False
+    max_attempts = 3
+    for attempt in range(max_attempts):
+        try:
+            domain_info = whois.whois(domain)
+            response_text = str(domain_info).lower()
+            if "no match for" in response_text or "not found" in response_text or "no data found" in response_text:
+                return True
+            if domain_info.status is None and domain_info.expiration_date is None:
+                return True
+            return False
+        except ConnectionResetError as e:
+            st.error(f"Conexão reiniciada ao verificar {domain}: {e}")
+            time.sleep(5)  # Esperar 5 segundos antes de tentar novamente
+        except Exception as e:
+            st.error(f"Erro ao verificar o domínio {domain}: {e}")
+            return False
+    return False  # Retorna falso se todas as tentativas falharem
 
 
 def check_domains(df):
