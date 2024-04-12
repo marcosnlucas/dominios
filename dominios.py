@@ -4,6 +4,10 @@ import whois
 from datetime import datetime
 import time
 
+import time
+import whois
+import streamlit as st
+
 def check_domain(domain):
     max_attempts = 3
     for attempt in range(max_attempts):
@@ -21,6 +25,8 @@ def check_domain(domain):
         except Exception as e:
             st.error(f"Erro ao verificar o domínio {domain}: {e}")
             return False
+        finally:
+            time.sleep(1)  # Pausa entre tentativas ou antes da próxima verificação
     return False  # Retorna falso se todas as tentativas falharem
 
 
